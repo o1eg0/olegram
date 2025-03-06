@@ -1,0 +1,89 @@
+specification {
+  element person {
+    style {
+      shape person
+    }
+  }
+  element container {
+    style {
+      color slate
+    }
+  }
+  element database {
+    style {
+      shape storage
+    }
+  }
+  element queue {
+    style {
+      shape queue 
+    }
+  }
+}
+
+model {
+  user = person 'Пользователь' {
+    description 'Тот кто взаимодействует с системой через UI'
+  }
+
+  system = container 'API Gateway' {
+    description 'Единая точка входа для всех запросов с UI'
+    technology 'REST API'
+  }
+
+  usersService = container 'Сервис пользователей' {
+    description 'Регистрация, аутентификация и управление пользователями'
+    technology 'REST API'
+  }
+
+  postsCommentsService = container 'Сервис постов и комментариев' {
+    description 'Создание и управление постами и комментариями'
+    technology 'REST API'
+  }
+
+  statsService = container 'Сервис статистики' {
+    description 'Аналитика просмотров, лайков и комментариев'
+    technology 'REST API'
+  }
+
+  messageBroker = queue 'Message Broker' {
+    description 'Передача событий статистики (просмотры, лайки, комментарии)'
+    technology 'Kafka'
+  }
+
+  dbUsers = database 'БД пользователей' {
+    description 'Хранит данные пользователей и ролей'
+    technology 'PostgreSQL'
+  }
+
+  dbPostsComments = database 'БД постов и комментариев' {
+    description 'Хранит данные постов и комментариев'
+    technology 'PostgreSQL'
+  }
+
+  dbStats = database 'БД статистики' {
+    description 'Хранит статистику действий пользователей'
+    technology 'ClickHouse'
+  }
+
+  user -> system 'делает запросы через UI'
+
+  system -> usersService 'REST-запросы: регистрация, авторизация'
+  system -> postsCommentsService 'REST-запросы: CRUD постов и комментариев'
+  system -> statsService 'REST-запросы: получение статистики'
+
+  usersService -> dbUsers 'хранит данные'
+  postsCommentsService -> dbPostsComments 'хранит данные'
+  statsService -> dbStats 'хранит данные'
+
+  postsCommentsService -> messageBroker 'публикует события: просмотры, лайки, комментарии'
+  messageBroker -> statsService 'передает события статистики'
+}
+
+views {
+
+  view index {
+    title 'Общая архитектура социальной сети'
+    include *
+  }
+}
