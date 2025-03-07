@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "api_gateway"
+version = "0.1.0"
+description = ""
+authors = ["Oleg Gorbatiuk <oleg36531@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.115.11"
+uvicorn = "^0.34.0"
+httpx = "^0.28.1"
+passlib = "^1.7.4"
+sqlalchemy = "^2.0.38"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

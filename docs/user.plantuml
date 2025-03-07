@@ -5,10 +5,16 @@ entity Users {
   --
   login : varchar
   password_hash : varchar
-  password_salt : varchar
   email : varchar
   created_at : timestamp
   role_id : int [FK]
+
+  # **Профиль**
+  first_name : varchar
+  last_name : varchar
+  birthday : date
+  bio : text
+  avatar_url : varchar
 }
 
 entity Roles {
@@ -19,17 +25,6 @@ entity Roles {
   created_at : timestamp
 }
 
-entity UserProfiles {
-  * id : UUID [PK, FK]
-  --
-  first_name : varchar
-  last_name : varchar
-  birthday : date
-  bio : text
-  avatar_url : varchar
-}
-
 Users --{ Roles : "имеет роль"
-Users -- UserProfiles : "имеет профиль"
 
 @enduml
