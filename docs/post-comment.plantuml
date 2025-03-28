@@ -1,0 +1,34 @@
+@startuml PostsComments_ER
+
+entity Posts {
+  * id : UUID [PK]
+  --
+  user_id : UUID [FK]
+  content : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity Comments {
+  * id : UUID [PK]
+  --
+  post_id : UUID [FK]
+  user_id : UUID [FK]
+  content : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity Attachments {
+  * id : UUID [PK]
+  --
+  post_id : UUID [FK]
+  file_url : varchar
+  file_type : varchar
+  uploaded_at : timestamp
+}
+
+Posts --{ Comments : "имеет \n комментарии"
+Posts --{ Attachments : "имеет \n вложения"
+
+@enduml

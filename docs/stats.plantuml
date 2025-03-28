@@ -1,0 +1,31 @@
+@startuml StatsService_ER
+
+entity PostStats {
+  * post_id : UUID [PK]
+  * date : Date [PK]
+  --
+  views_count : UInt64
+  likes_count : UInt64
+  comments_count : UInt64
+  shares_count : UInt64
+}
+
+entity UserActivity {
+  * event_id : UUID [PK]
+  --
+  user_id : UUID
+  post_id : UUID
+  event_type : String
+  event_time : DateTime
+}
+
+entity DailyAggregates {
+  * date : Date [PK]
+  --
+  total_views : UInt64
+  total_likes : UInt64
+  total_comments : UInt64
+  unique_users : UInt64
+}
+
+@enduml
