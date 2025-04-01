@@ -6,12 +6,15 @@ authors = ["Oleg Gorbatiuk <oleg36531@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.11"
 fastapi = "^0.115.11"
 uvicorn = "^0.34.0"
 httpx = "^0.28.1"
 passlib = "^1.7.4"
 sqlalchemy = "^2.0.38"
+grpcio = "^1.71.0"
+google = "^3.0.0"
+grpcio-tools = "^1.71.0"
 
 
 [build-system]

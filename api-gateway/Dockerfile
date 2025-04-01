@@ -9,7 +9,7 @@ COPY ./pyproject.toml ./poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction --no-ansi
 
-COPY ./main.py ./main.py
+COPY . .
 
 EXPOSE 8000
 

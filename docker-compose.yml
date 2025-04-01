@@ -20,14 +20,14 @@ services:
     depends_on:
       - users_db
 
-#  post_comment_service:
-#    build: ./post-comment-service
-#    environment:
-#      DB_DNS: postgresql+asyncpg://postgres:postgres@post_comment_service_db:5432/postgres
-#    ports:
-#      - "50051:50051"
-#    depends_on:
-#      - posts_db
+  post_comment_service:
+    build: ./post-comment-service
+    environment:
+      DB_DNS: postgresql+asyncpg://postgres:postgres@post_comment_service_db:5432/postgres
+    ports:
+      - "50051:50051"
+    depends_on:
+      - posts_db
 
   users_db:
     image: postgres:16
