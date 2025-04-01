@@ -3,21 +3,33 @@ services:
     build: ./api-gateway
     environment:
       USER_SERVICE_ADDR: user_service:8000
+      POST_COMMENT_ADDR: post_comment_service:50051
     ports:
       - "8000:8000"
     depends_on:
       - user_service
+#      - post_comment_service
 
   user_service:
     build: ./user-service
+    env_file: .env
     environment:
       DB_DNS: postgresql+asyncpg://postgres:postgres@user_service_db:5432/postgres
     ports:
       - "8001:8000"
     depends_on:
-      - db
+      - users_db
 
-  db:
+#  post_comment_service:
+#    build: ./post-comment-service
+#    environment:
+#      DB_DNS: postgresql+asyncpg://postgres:postgres@post_comment_service_db:5432/postgres
+#    ports:
+#      - "50051:50051"
+#    depends_on:
+#      - posts_db
+
+  users_db:
     image: postgres:16
     hostname: user_service_db
     healthcheck:
@@ -32,8 +44,27 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - user_pg_data:/var/lib/postgresql/data
+
+  posts_db:
+    image: postgres:16
+    hostname: post_comment_service_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - post_pg_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  user_pg_data:
+    driver: local
+  post_pg_data:
     driver: local
