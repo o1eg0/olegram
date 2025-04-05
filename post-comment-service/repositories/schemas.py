@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+import postservice_pb2
+
 
 class Post(BaseModel):
     id: UUID
@@ -16,6 +18,18 @@ class Post(BaseModel):
     tags: List[str]
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
+
+    def to_proto(self) -> postservice_pb2.Post:
+        return postservice_pb2.Post(
+            id=str(self.id),
+            title=self.title,
+            description=self.description,
+            creator_id=self.creator_id,
+            created_at=self.created_at.isoformat(),
+            updated_at=self.updated_at.isoformat(),
+            is_private=self.is_private,
+            tags=self.tags
+        )
 
 
 class PostCreate(BaseModel):
