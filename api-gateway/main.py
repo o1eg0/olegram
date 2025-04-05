@@ -144,13 +144,15 @@ async def delete_post(
 @router.get("/posts", response_model=PostList)
 async def list_posts(
     username: Annotated[str, Depends(get_current_user)],
+    creator_id: str,
     page: int = 1,
     page_size: int = 10,
 ):
     grpc_request = postservice_pb2.ListPostsRequest(
         requester_id=username,
         page=page,
-        page_size=page_size
+        page_size=page_size,
+        creator_id=creator_id,
     )
 
     response = await post_service_stub.ListPosts(grpc_request)

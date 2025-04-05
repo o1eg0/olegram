@@ -89,10 +89,17 @@ class PostServiceServicer(postservice_pb2_grpc.PostServiceServicer):
         offset = (request.page - 1) * request.page_size
         limit = request.page_size
         posts, total_count = await self.repo.list_posts(
-            creator_id=request.requester_id,
+            creator_id=request.creator_id,
             offset=offset,
             limit=limit
         )
+
+        if request.creator_id != request.requester_id:
+            public_posts = [post.to_proto() for post in posts if post.is_private == False]
+            return postservice_pb2.ListPostsResponse(
+                posts=public_posts,
+                total_count=len(public_posts)
+            )
 
         return postservice_pb2.ListPostsResponse(
             posts=[post.to_proto() for post in posts],
