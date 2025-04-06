@@ -101,7 +101,7 @@ async def get_post(
 
 @router.put("/posts/{post_id}", response_model=Post)
 async def update_post(
-        post_id: uuid.UUID,
+        post_id: str,
         post_update: PostUpdate,
         username: Annotated[str, Depends(get_current_user)]
 ):
@@ -129,7 +129,7 @@ async def update_post(
 
 @router.delete("/posts/{post_id}", response_model=dict)
 async def delete_post(
-    post_id: uuid.UUID,
+    post_id: str,
     username: Annotated[str, Depends(get_current_user)]
 ):
     grpc_request = postservice_pb2.DeletePostRequest(
