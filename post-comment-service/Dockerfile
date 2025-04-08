@@ -11,6 +11,6 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 50051
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "python3", "main.py"]

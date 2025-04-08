@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "user_service"
+name = "post_comment_service"
 version = "0.1.0"
 description = ""
 authors = ["Oleg Gorbatiuk <oleg36531@gmail.com>"]
@@ -28,7 +28,9 @@ pytest-twisted = "^1.14.3"
 twisted = "^24.11.0"
 types-psycopg2 = "^2.9.21.20250121"
 psycopg2-binary = "^2.9.10"
-pyjwt = "^2.10.1"
+grpcio = "^1.71.0"
+grpcio-tools = "^1.71.0"
+google = "^3.0.0"
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"

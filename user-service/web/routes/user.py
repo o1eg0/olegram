@@ -6,7 +6,8 @@ from repositories.base import UserRepository
 from passlib.context import CryptContext
 
 from repositories.schemas import UserCreate, User, UserVerify
-from web.dependencies import get_user_repository, get_pwd_context
+from token_service import TokenService
+from web.dependencies import get_user_repository, get_pwd_context, get_token_service, get_username_by_token
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ async def auth(
     user_verify: UserVerify,
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     pwd_context: Annotated[CryptContext, Depends(get_pwd_context)],
+    token_service: Annotated[TokenService, Depends(get_token_service)]
 ):
     if not (
         await user_repository.verify(
@@ -44,4 +46,16 @@ async def auth(
         )
     ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"status": "success"}
+
+    return {
+        "status": "success",
+        "access_token": token_service.create_access_token(user_verify.username),
+        "token_type": "bearer",
+    }
+
+
+@router.get("/validate")
+async def validate(username: Annotated[str, Depends(get_username_by_token)]):
+    if username is None:
+        return {"status": "invalid"}
+    return {"status": "success", "username": username}

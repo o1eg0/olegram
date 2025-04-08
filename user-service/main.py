@@ -4,6 +4,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from passlib.context import CryptContext
+from token_service import JWTTokenService
 
 from repositories.postgres.repository import PostgresUserRepository
 from web.routes.user import router as user_router
@@ -14,6 +15,9 @@ from web.routes.profile import router as profile_router
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     app.state.pwd_context = pwd_context
+
+    jwt_token_service = JWTTokenService(os.getenv("JWT_SECRET"), int(os.getenv("JWT_EXPIRE_TIME")), os.getenv("JWT_ALGO"))
+    app.state.token_service = jwt_token_service
 
     dns = (
         os.getenv("DB_DNS")
