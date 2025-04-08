@@ -14,6 +14,8 @@ class Post(BaseModel):
     creator_id: str
     created_at: datetime
     updated_at: datetime
+    views: int
+    likes: int
     is_private: bool
     tags: List[str]
 
@@ -28,6 +30,8 @@ class Post(BaseModel):
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
             is_private=self.is_private,
+            views=self.views,
+            likes=self.likes,
             tags=self.tags
         )
 
@@ -45,3 +49,20 @@ class PostUpdate(BaseModel):
     description: str | None = None
     is_private: bool | None = None
     tags: List[str] | None = None
+
+
+class Comment(BaseModel):
+    id: UUID
+    post_id: UUID
+    user_id: str
+    text: str
+    created_at: datetime
+
+    def to_proto(self) -> postservice_pb2.Comment:
+        return postservice_pb2.Comment(
+            id=str(self.id),
+            post_id=str(self.post_id),
+            user_id=self.user_id,
+            text=self.text,
+            created_at=self.created_at.isoformat()
+        )

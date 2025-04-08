@@ -1,14 +1,18 @@
 import asyncio
 import logging
 import os
+import uuid
+from datetime import UTC, datetime
 from uuid import UUID
 
 import grpc
+from pydantic import BaseModel
+from twisted.mail.scripts.mailmail import success
 
 import postservice_pb2
 import postservice_pb2_grpc
 from repositories.postgres.repository import PostgresPostRepository
-from repositories.schemas import PostCreate, PostUpdate
+from repositories.schemas import PostCreate, PostUpdate, Comment
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -103,6 +107,35 @@ class PostServiceServicer(postservice_pb2_grpc.PostServiceServicer):
 
         return postservice_pb2.ListPostsResponse(
             posts=[post.to_proto() for post in posts],
+            total_count=total_count
+        )
+
+    async def ViewPost(self, request, context):
+        return postservice_pb2.ViewPostResponse(success=True)
+
+    async def LikePost(self, request, context):
+        return postservice_pb2.LikePostResponse(success=False)
+
+    async def AddComment(self, request, context):
+        comment = await self.repo.add_comment(
+            post_id=UUID(request.post_id),
+            user_id=request.user_id,
+            text=request.text
+        )
+
+        return postservice_pb2.AddCommentResponse(comment=comment.to_proto())
+
+    async def GetComments(self, request, context):
+        offset = (request.page - 1) * request.page_size
+        limit = request.page_size
+        comments, total_count = await self.repo.list_comments(
+            post_id=UUID(request.post_id),
+            offset=offset,
+            limit=limit
+        )
+
+        return postservice_pb2.GetCommentsResponse(
+            posts=[comment.to_proto() for comment in comments],
             total_count=total_count
         )
 
