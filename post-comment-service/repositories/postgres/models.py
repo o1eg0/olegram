@@ -8,8 +8,10 @@ from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 def utcnow():
     return datetime.now(UTC)
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Post(Base):
     __tablename__ = "posts"

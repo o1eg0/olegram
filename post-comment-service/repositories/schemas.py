@@ -58,6 +58,8 @@ class Comment(BaseModel):
     text: str
     created_at: datetime
 
+    model_config = ConfigDict(from_attributes=True, extra="allow")
+
     def to_proto(self) -> postservice_pb2.Comment:
         return postservice_pb2.Comment(
             id=str(self.id),
@@ -67,7 +69,8 @@ class Comment(BaseModel):
             created_at=self.created_at.isoformat()
         )
 
+
 class CommentCreate(BaseModel):
     post_id: UUID
-    user_id: UUID
+    user_id: str
     text: str

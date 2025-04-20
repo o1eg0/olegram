@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import os
-import time
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -20,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 class PostServiceServicer(postservice_pb2_grpc.PostServiceServicer):
     def __init__(
-        self,
-        post_repo: PostgresPostRepository,
-        comment_repo: PostgresCommentRepository,
-        kafka_producer: AIOKafkaProducer
+            self,
+            post_repo: PostgresPostRepository,
+            comment_repo: PostgresCommentRepository,
+            kafka_producer: AIOKafkaProducer
     ):
         self.post_repo = post_repo
         self.comment_repo = comment_repo
@@ -145,7 +144,7 @@ class PostServiceServicer(postservice_pb2_grpc.PostServiceServicer):
 
     async def AddComment(self, request, context):
         comment = await self.comment_repo.create(CommentCreate(
-            post_id=request.post_id,
+            post_id=UUID(request.post_id),
             user_id=request.user_id,
             text=request.text,
         ))
@@ -172,7 +171,7 @@ class PostServiceServicer(postservice_pb2_grpc.PostServiceServicer):
         )
 
         return postservice_pb2.GetCommentsResponse(
-            posts=[comment.to_proto() for comment in comments],
+            comments=[comment.to_proto() for comment in comments],
             total_count=total_count
         )
 
@@ -195,7 +194,14 @@ async def serve():
         except Exception:
             await asyncio.sleep(1)
 
-    postservice_pb2_grpc.add_PostServiceServicer_to_server(PostServiceServicer(post_repo, comment_repo, producer), server)
+    postservice_pb2_grpc.add_PostServiceServicer_to_server(
+        PostServiceServicer(
+            post_repo=post_repo,
+            comment_repo=comment_repo,
+            kafka_producer=producer,
+        ),
+        server
+    )
     server.add_insecure_port("[::]:50051")
     await server.start()
     await server.wait_for_termination()
