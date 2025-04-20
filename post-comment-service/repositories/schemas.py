@@ -16,6 +16,8 @@ class Post(BaseModel):
     updated_at: datetime
     is_private: bool
     tags: List[str]
+    views: int
+    likes: int
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
@@ -28,7 +30,9 @@ class Post(BaseModel):
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
             is_private=self.is_private,
-            tags=self.tags
+            tags=self.tags,
+            views=self.views,
+            likes=self.likes,
         )
 
 
@@ -45,3 +49,28 @@ class PostUpdate(BaseModel):
     description: str | None = None
     is_private: bool | None = None
     tags: List[str] | None = None
+
+
+class Comment(BaseModel):
+    id: UUID
+    post_id: UUID
+    user_id: str
+    text: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, extra="allow")
+
+    def to_proto(self) -> postservice_pb2.Comment:
+        return postservice_pb2.Comment(
+            id=str(self.id),
+            post_id=str(self.post_id),
+            user_id=self.user_id,
+            text=self.text,
+            created_at=self.created_at.isoformat()
+        )
+
+
+class CommentCreate(BaseModel):
+    post_id: UUID
+    user_id: str
+    text: str
