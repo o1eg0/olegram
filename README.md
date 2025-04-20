@@ -22,12 +22,10 @@
 - Для выключения контейнеров, выполним `docker compose down`
 
 **API Gateway**:
-- доступен по адресу http://0.0.0.0:8001/
-- Swagger: http://0.0.0.0:8001/docs
+- Swagger: http://localhost:8081/docs
 
 **User Service**:
-- доступен по адресу http://0.0.0.0:8000/
-- Swagger: http://0.0.0.0:8000/docs
+- Swagger: http://localhost:8082/docs
 
 **База для User Service и Post Comment Service**:
 - **user**: `postgres`

@@ -19,6 +19,8 @@ class Post(Base):
     creator_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    likes: Mapped[int] = mapped_column(BigInteger, default=0, server_default='0')
+    views: Mapped[int] = mapped_column(BigInteger, default=0, server_default='0')
     is_private: Mapped[bool] = mapped_column(Boolean, default=False)
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
 
@@ -29,7 +31,5 @@ class Comment(Base):
     post_id: Mapped[uuid.UUID] = mapped_column(Uuid, index=True)
     user_id: Mapped[str] = mapped_column(String)
     text: Mapped[str] = mapped_column(String, nullable=False)
-    views: Mapped[int] = mapped_column(BigInteger, default=0, server_default='0')
-    likes: Mapped[int] = mapped_column(BigInteger, default=0, server_default='0')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

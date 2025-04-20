@@ -14,10 +14,10 @@ class Post(BaseModel):
     creator_id: str
     created_at: datetime
     updated_at: datetime
-    views: int
-    likes: int
     is_private: bool
     tags: List[str]
+    views: int
+    likes: int
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
@@ -30,9 +30,9 @@ class Post(BaseModel):
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
             is_private=self.is_private,
+            tags=self.tags,
             views=self.views,
             likes=self.likes,
-            tags=self.tags
         )
 
 
@@ -66,3 +66,8 @@ class Comment(BaseModel):
             text=self.text,
             created_at=self.created_at.isoformat()
         )
+
+class CommentCreate(BaseModel):
+    post_id: UUID
+    user_id: UUID
+    text: str

@@ -19,6 +19,8 @@ class Post(PostBase):
     creator_id: str = Field(..., description="ID пользователя-создателя поста")
     created_at: datetime = Field(..., description="Дата и время создания поста")
     updated_at: datetime = Field(..., description="Дата и время последнего обновления поста")
+    likes: int = Field(..., description="Лайки поста")
+    views: int = Field(..., description="Просмотры")
 
 class PostList(BaseModel):
     posts: List[Post] = Field(..., description="Список постов")
