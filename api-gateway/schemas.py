@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List
 
 from pydantic import BaseModel, Field
@@ -44,3 +44,20 @@ class Comment(BaseModel):
 class CommentList(BaseModel):
     comments: List[Comment] = Field(..., description="Список комментариев")
     total_count: int = Field(..., description="Общее количество комментариев")
+
+
+class Counter(BaseModel):
+    views: int
+    likes: int
+    comments: int
+
+class TimelinePoint(BaseModel):
+    date: date
+    value: int
+
+class TimelineResponse(BaseModel):
+    points: list[TimelinePoint]
+
+class TopItem(BaseModel):
+    id: str
+    value: int
