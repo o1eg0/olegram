@@ -4,16 +4,22 @@ from typing import Annotated
 
 import grpc
 import httpx
-from fastapi import FastAPI, Request, HTTPException, Depends, APIRouter, Header
+from fastapi import FastAPI, Request, HTTPException, Depends, APIRouter, Header, Path
 
 import postservice_pb2
 from postservice_pb2_grpc import PostServiceStub
-from schemas import Post, PostCreate, PostUpdate, PostList, Comment, CommentList
+import stats_pb2
+from stats_pb2_grpc import StatsServiceStub
+from schemas import Post, PostCreate, PostUpdate, PostList, Comment, CommentList, Counter, TimelineResponse, TopItem, \
+    TimelinePoint
 
 app = FastAPI(title="API Gateway")
 
 USER_SERVICE_URL = os.getenv("USER_SERVICE_ADDR")
 POST_COMMENT_ADDR = os.getenv("POST_COMMENT_ADDR")
+STATS_ADDR = os.getenv("STATS_SERVICE_ADDR", "stats_service:50051")
+stats_channel = grpc.aio.insecure_channel(STATS_ADDR)
+stats_stub = StatsServiceStub(stats_channel)
 
 grpc_channel = grpc.aio.insecure_channel(POST_COMMENT_ADDR)
 post_service_stub = PostServiceStub(grpc_channel)
@@ -261,6 +267,41 @@ async def view_post(
     return {"status": "success"}
 
 
+stats_router = APIRouter(prefix="/stats")
+
+
+@stats_router.get("/posts/{post_id}", response_model=Counter)
+async def post_counters(post_id: str):
+    resp = await stats_stub.GetPostCounters(stats_pb2.PostIdRequest(post_id=post_id))
+    return Counter(**resp.dict())
+
+
+@stats_router.get("/posts/{post_id}/timeline/{metric}", response_model=TimelineResponse)
+async def post_timeline(post_id: str, metric: str = Path(pattern="views|likes|comments")):
+    kind = {"views": 0, "likes": 1, "comments": 2}[metric]
+    resp = await stats_stub.GetPostTimeline(
+        stats_pb2.TimelineRequest(post_id=post_id, metric=kind)
+    )
+    return TimelineResponse(
+        points=[TimelinePoint(date=p.date, value=p.value) for p in resp.points]
+    )
+
+
+@stats_router.get("/top/posts/{metric}", response_model=list[TopItem])
+async def top_posts(metric: str):
+    kind = {"views": 0, "likes": 1, "comments": 2}[metric]
+    resp = await stats_stub.GetTopPosts(stats_pb2.TopPostsRequest(metric=kind))
+    return [TopItem(id=p.post_id, value=p.value) for p in resp.posts]
+
+
+@stats_router.get("/top/users/{metric}", response_model=list[TopItem])
+async def top_users(metric: str):
+    kind = {"views": 0, "likes": 1, "comments": 2}[metric]
+    resp = await stats_stub.GetTopUsers(stats_pb2.TopUsersRequest(metric=kind))
+    return [TopItem(id=u.user_id, value=u.value) for u in resp.users]
+
+
 app.include_router(router, tags=["Posts"])
 app.include_router(comments_router, tags=["Comments"])
 app.include_router(actions_router, tags=["Actions"])
+app.include_router(stats_router, tags=["Stats"])
