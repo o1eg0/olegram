@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from sqlalchemy import delete, select, func
+from sqlalchemy import delete, select, func, update
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from repositories.base import PostRepository
-from repositories.postgres.models import Post as DBPost, Base
-from repositories.schemas import PostCreate, Post, PostUpdate
+from repositories.base import PostRepository, CommentRepository
+from repositories.postgres.models import Post as DBPost, Comment as DBComment, Base
+from repositories.schemas import PostCreate, Post, PostUpdate, Comment, CommentCreate
 
 
 class PostgresPostRepository(PostRepository):
@@ -55,3 +55,56 @@ class PostgresPostRepository(PostRepository):
             )
             posts = result.scalars().all()
             return [Post.model_validate(post) for post in posts], total
+
+    async def like(self, post_id: UUID) -> bool:
+        async with self.async_session() as session, session.begin():
+            result = await session.execute(
+                update(DBPost)
+                .where(DBPost.id == post_id)
+                .values(likes=DBPost.likes + 1)
+                .execution_options(synchronize_session="fetch")
+            )
+            return result.rowcount > 0
+
+    async def view(self, post_id: UUID) -> bool:
+        async with self.async_session() as session, session.begin():
+            result = await session.execute(
+                update(DBPost)
+                .where(DBPost.id == post_id)
+                .values(views=DBPost.views + 1)
+                .execution_options(synchronize_session="fetch")
+            )
+            return result.rowcount > 0
+
+
+class PostgresCommentRepository(CommentRepository):
+    def __init__(self, dns: str):
+        self.engine = create_async_engine(dns, echo=False, future=True)
+        self.async_session = async_sessionmaker(
+            self.engine, class_=AsyncSession, expire_on_commit=False
+        )
+
+    async def create_tables(self):
+        pass
+
+    async def create(self, comment: CommentCreate) -> Comment:
+        async with self.async_session() as session, session.begin():
+            db_comment = DBComment(post_id=comment.post_id, user_id=str(comment.user_id), text=comment.text)
+            session.add(db_comment)
+            await session.flush()
+            return Comment.model_validate(db_comment)
+
+    async def list_comments(self, post_id: UUID, offset: int, limit: int) -> tuple[list[Comment], int]:
+        async with self.async_session() as session:
+            total = await session.scalar(
+                select(func.count()).where(DBComment.post_id == post_id)
+            )
+            result = await session.execute(
+                select(DBComment)
+                .where(DBComment.post_id == post_id)
+                .order_by(DBComment.created_at.asc())
+                .offset(offset)
+                .limit(limit)
+            )
+            comments = result.scalars().all()
+            return [Comment.model_validate(c) for c in comments], total
