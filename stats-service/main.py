@@ -21,13 +21,20 @@ def apply_ch_migration(client):
             except Exception as ex:
                 print(f"Migration failed: {ex} | SQL: {stmt[:60]}")
 
+CH_FOR_MIGRATION = Client(
+    host=os.getenv("CH_HOST", "clickhouse"),
+    port=int(os.getenv("CH_PORT", 9000)),
+    database="default",      # <--- IMPORTANT!
+    send_receive_timeout=10,
+)
+apply_ch_migration(CH_FOR_MIGRATION)
+
 CH = Client(
     host=os.getenv("CH_HOST", "clickhouse"),
     port=int(os.getenv("CH_PORT", 9000)),
     database="stats",
     send_receive_timeout=10,
 )
-apply_ch_migration(CH)
 
 
 async def consume_loop():

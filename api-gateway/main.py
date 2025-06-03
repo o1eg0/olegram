@@ -1,6 +1,7 @@
 import os
 from pprint import pprint
 from typing import Annotated
+from uuid import UUID
 
 import grpc
 import httpx
@@ -271,9 +272,13 @@ stats_router = APIRouter(prefix="/stats")
 
 
 @stats_router.get("/posts/{post_id}", response_model=Counter)
-async def post_counters(post_id: str):
-    resp = await stats_stub.GetPostCounters(stats_pb2.PostIdRequest(post_id=post_id))
-    return Counter(**resp.dict())
+async def post_counters(post_id: UUID):
+    resp = await stats_stub.GetPostCounters(stats_pb2.PostIdRequest(post_id=str(post_id)))
+    return Counter(
+        views=resp.views,
+        likes=resp.likes,
+        comments=resp.comments,
+    )
 
 
 @stats_router.get("/posts/{post_id}/timeline/{metric}", response_model=TimelineResponse)
@@ -288,14 +293,14 @@ async def post_timeline(post_id: str, metric: str = Path(pattern="views|likes|co
 
 
 @stats_router.get("/top/posts/{metric}", response_model=list[TopItem])
-async def top_posts(metric: str):
+async def top_posts(metric: str = Path(pattern="views|likes|comments")):
     kind = {"views": 0, "likes": 1, "comments": 2}[metric]
     resp = await stats_stub.GetTopPosts(stats_pb2.TopPostsRequest(metric=kind))
     return [TopItem(id=p.post_id, value=p.value) for p in resp.posts]
 
 
 @stats_router.get("/top/users/{metric}", response_model=list[TopItem])
-async def top_users(metric: str):
+async def top_users(metric: str = Path(pattern="views|likes|comments")):
     kind = {"views": 0, "likes": 1, "comments": 2}[metric]
     resp = await stats_stub.GetTopUsers(stats_pb2.TopUsersRequest(metric=kind))
     return [TopItem(id=u.user_id, value=u.value) for u in resp.users]
